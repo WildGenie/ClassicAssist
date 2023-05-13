@@ -410,10 +410,7 @@ def _ContainsComments(node):
   """Return True if the list has a comment in it."""
   if isinstance(node, pytree.Leaf):
     return node.type == grammar_token.COMMENT
-  for child in node.children:
-    if _ContainsComments(child):
-      return True
-  return False
+  return any(_ContainsComments(child) for child in node.children)
 
 
 def _SetMustSplitOnFirstLeaf(node):

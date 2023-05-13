@@ -60,11 +60,10 @@ class PyTreeVisitor(object):
     if hasattr(self, method):
       # Found a specific visitor for this node
       getattr(self, method)(node)
+    elif isinstance(node, pytree.Leaf):
+      self.DefaultLeafVisit(node)
     else:
-      if isinstance(node, pytree.Leaf):
-        self.DefaultLeafVisit(node)
-      else:
-        self.DefaultNodeVisit(node)
+      self.DefaultNodeVisit(node)
 
   def DefaultNodeVisit(self, node):
     """Default visitor for Node: visits the node's children depth-first.

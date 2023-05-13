@@ -215,7 +215,7 @@ def _FormatFile(filename,
                 verbose=False):
   """Format an individual file."""
   if verbose and not quiet:
-    print('Reformatting %s' % filename)
+    print(f'Reformatting {filename}')
 
   if style_config is None and not no_local_style:
     style_config = file_resources.GetDefaultStyleForDir(
@@ -274,11 +274,10 @@ def _BuildParser():
   """
   parser = argparse.ArgumentParser(
       prog='yapf', description='Formatter for Python code.')
-  parser.add_argument(
-      '-v',
-      '--version',
-      action='version',
-      version='%(prog)s {}'.format(__version__))
+  parser.add_argument('-v',
+                      '--version',
+                      action='version',
+                      version=f'%(prog)s {__version__}')
 
   diff_inplace_quiet_group = parser.add_mutually_exclusive_group()
   diff_inplace_quiet_group.add_argument(
@@ -359,7 +358,7 @@ def run_main():  # pylint: disable=invalid-name
   try:
     sys.exit(main(sys.argv))
   except errors.YapfError as e:
-    sys.stderr.write('yapf: ' + str(e) + '\n')
+    sys.stderr.write(f'yapf: {str(e)}' + '\n')
     sys.exit(1)
 
 

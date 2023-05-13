@@ -220,8 +220,7 @@ class Parameter(object):
     return Parameter(self.first_token, self.last_token)
 
   def __repr__(self):
-    return '[first_token::%s, last_token:%s]' % (self.first_token,
-                                                 self.last_token)
+    return f'[first_token::{self.first_token}, last_token:{self.last_token}]'
 
   def __eq__(self, other):
     return hash(self) == hash(other)
