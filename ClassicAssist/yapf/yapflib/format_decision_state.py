@@ -427,8 +427,8 @@ class FormatDecisionState(object):
           if opening.value == '(':
             is_func_call = True
             break
-          if (not (opening.is_name or opening.value in {'*', '**'}) and
-              opening.value != '.'):
+          if (not opening.is_name and opening.value not in {'*', '**'}
+              and opening.value != '.'):
             break
           opening = opening.next_token
 
@@ -489,8 +489,8 @@ class FormatDecisionState(object):
             if opening.value == '(':
               is_func_call = True
               break
-            if (not (opening.is_name or opening.value in {'*', '**'}) and
-                opening.value != '.'):
+            if (not opening.is_name and opening.value not in {'*', '**'}
+                and opening.value != '.'):
               break
             opening = opening.next_token
 
@@ -549,14 +549,9 @@ class FormatDecisionState(object):
       # Retain the split before a bitwise operator.
       return True
 
-    if (current.is_comment and
-        previous.lineno < current.lineno - current.value.count('\n')):
-      # If a comment comes in the middle of a logical line (like an if
-      # conditional with comments interspersed), then we want to split if the
-      # original comments were on a separate line.
-      return True
-
-    return False
+    return bool(
+        (current.is_comment
+         and previous.lineno < current.lineno - current.value.count('\n')))
 
   def AddTokenToState(self, newline, dry_run, must_split=False):
     """Add a token to the format decision state.
@@ -608,7 +603,11 @@ class FormatDecisionState(object):
       current.AddWhitespacePrefix(newlines_before=0, spaces=spaces)
 
     if previous.OpensScope():
-      if not current.is_comment:
+      if current.is_comment:
+        self.stack[-1].closing_scope_indent = (
+            self.stack[-1].indent - style.Get('CONTINUATION_INDENT_WIDTH'))
+
+      else:
         # Align closing scopes that are on a newline with the opening scope:
         #
         #     foo = [a,
@@ -618,10 +617,6 @@ class FormatDecisionState(object):
         if style.Get('ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT'):
           self.stack[-1].closing_scope_indent += 1
         self.stack[-1].indent = self.column + spaces
-      else:
-        self.stack[-1].closing_scope_indent = (
-            self.stack[-1].indent - style.Get('CONTINUATION_INDENT_WIDTH'))
-
     self.column += spaces
 
   def _AddTokenOnNewline(self, dry_run, must_split):

@@ -160,8 +160,8 @@ class _BlankLineCalculator(pytree_visitor.PyTreeVisitor):
     return _ONE_BLANK_LINE
 
   def _IsTopLevel(self, node):
-    return (not (self.class_level or self.function_level) and
-            _StartsInZerothColumn(node))
+    return (not self.class_level and not self.function_level
+            and _StartsInZerothColumn(node))
 
 
 def _SetNumNewlines(node, num_newlines):

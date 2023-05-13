@@ -126,6 +126,4 @@ def removeBOM(source):
   bom = codecs.BOM_UTF8
   if PY3:
     bom = bom.decode('utf-8')
-  if source.startswith(bom):
-    return source[len(bom):]
-  return source
+  return source[len(bom):] if source.startswith(bom) else source

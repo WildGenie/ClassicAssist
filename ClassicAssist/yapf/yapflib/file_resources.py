@@ -37,10 +37,8 @@ def _GetExcludePatternsFromYapfIgnore(filename):
   ignore_patterns = []
   if os.path.isfile(filename) and os.access(filename, os.R_OK):
     with open(filename, 'r') as fd:
-      for line in fd:
-        if line.strip() and not line.startswith('#'):
-          ignore_patterns.append(line.strip())
-
+      ignore_patterns.extend(line.strip() for line in fd
+                             if line.strip() and not line.startswith('#'))
     if any(e.startswith('./') for e in ignore_patterns):
       raise errors.YapfError('path in .yapfignore should not start with ./')
 
@@ -152,10 +150,7 @@ def GetDefaultStyleForDir(dirname, default_style=style.DEFAULT_STYLE):
     dirname = os.path.dirname(dirname)
 
   global_file = os.path.expanduser(style.GLOBAL_STYLE)
-  if os.path.exists(global_file):
-    return global_file
-
-  return default_style
+  return global_file if os.path.exists(global_file) else default_style
 
 
 def GetCommandLineFiles(command_line_file_list, recursive, exclude):
@@ -203,7 +198,7 @@ def _FindPythonFiles(filenames, recursive, exclude):
   """Find all Python files."""
   if exclude and any(e.startswith('./') for e in exclude):
     raise errors.YapfError("path in '--exclude' should not start with ./")
-  exclude = exclude and [e.rstrip("/" + os.path.sep) for e in exclude]
+  exclude = exclude and [e.rstrip(f"/{os.path.sep}") for e in exclude]
 
   python_files = []
   for filename in filenames:
@@ -212,7 +207,7 @@ def _FindPythonFiles(filenames, recursive, exclude):
     if os.path.isdir(filename):
       if not recursive:
         raise errors.YapfError(
-            "directory specified without '--recursive' flag: %s" % filename)
+            f"directory specified without '--recursive' flag: {filename}")
 
       # TODO(morbo): Look into a version of os.walk that can handle recursion.
       excluded_dirs = []
@@ -233,7 +228,7 @@ def _FindPythonFiles(filenames, recursive, exclude):
         # made in-place instead of creating a modified copy of `dirnames`.
         # list.remove() is slow and list.pop() is a headache. Instead clear
         # `dirnames` then repopulate it.
-        dirnames_ = [dirnames.pop(0) for i in range(len(dirnames))]
+        dirnames_ = [dirnames.pop(0) for _ in range(len(dirnames))]
         for dirname in dirnames_:
           dir_ = os.path.join(dirpath, dirname)
           if IsIgnored(dir_, exclude):
@@ -252,7 +247,7 @@ def IsIgnored(path, exclude):
   if exclude is None:
     return False
   path = path.lstrip(os.path.sep)
-  while path.startswith('.' + os.path.sep):
+  while path.startswith(f'.{os.path.sep}'):
     path = path[2:]
   return any(fnmatch.fnmatch(path, e.rstrip(os.path.sep)) for e in exclude)
 

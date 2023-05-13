@@ -113,10 +113,7 @@ def _RetainHorizontalSpacing(line):
 
 def _RetainRequiredVerticalSpacing(cur_line, prev_line, lines):
   """Retain all vertical spacing between lines."""
-  prev_tok = None
-  if prev_line is not None:
-    prev_tok = prev_line.last
-
+  prev_tok = prev_line.last if prev_line is not None else None
   if cur_line.disable:
     # After the first token we are acting on a single line. So if it is
     # disabled we must not reformat.
@@ -132,16 +129,13 @@ def _RetainRequiredVerticalSpacingBetweenTokens(cur_tok, prev_tok, lines):
   if prev_tok is None:
     return
 
-  if prev_tok.is_string:
-    prev_lineno = prev_tok.lineno + prev_tok.value.count('\n')
-  elif prev_tok.is_pseudo:
-    if not prev_tok.previous_token.is_multiline_string:
-      prev_lineno = prev_tok.previous_token.lineno
-    else:
-      prev_lineno = prev_tok.lineno
-  else:
+  if (not prev_tok.is_string and prev_tok.is_pseudo
+      and not prev_tok.previous_token.is_multiline_string):
+    prev_lineno = prev_tok.previous_token.lineno
+  elif not prev_tok.is_string and prev_tok.is_pseudo or not prev_tok.is_string:
     prev_lineno = prev_tok.lineno
-
+  else:
+    prev_lineno = prev_tok.lineno + prev_tok.value.count('\n')
   if cur_tok.is_comment:
     cur_lineno = cur_tok.lineno - cur_tok.value.count('\n')
   else:
@@ -321,7 +315,7 @@ def _AlignTrailingComments(final_lines):
             if line_tok.is_comment:
               pc_line_lengths.append(len(line_content))
             else:
-              line_content += '{}{}'.format(whitespace_prefix, line_tok.value)
+              line_content += f'{whitespace_prefix}{line_tok.value}'
 
           if pc_line_lengths:
             max_line_length = max(max_line_length, max(pc_line_lengths))
@@ -331,12 +325,11 @@ def _AlignTrailingComments(final_lines):
         # Calculate the aligned column value
         max_line_length += 2
 
-        aligned_col = None
-        for potential_col in tok.spaces_required_before:
-          if potential_col > max_line_length:
-            aligned_col = potential_col
-            break
-
+        aligned_col = next(
+            (potential_col for potential_col in tok.spaces_required_before
+             if potential_col > max_line_length),
+            None,
+        )
         if aligned_col is None:
           aligned_col = max_line_length
 
@@ -364,8 +357,7 @@ def _AlignTrailingComments(final_lines):
 
               for comment_line_index, comment_line in enumerate(
                   line_tok.value.split('\n')):
-                line_content.append('{}{}'.format(whitespace,
-                                                  comment_line.strip()))
+                line_content.append(f'{whitespace}{comment_line.strip()}')
 
                 if comment_line_index == 0:
                   whitespace = ' ' * (aligned_col - 1)
@@ -400,8 +392,7 @@ def _FormatFinalLines(final_lines, verify):
     formatted_line = []
     for tok in line.tokens:
       if not tok.is_pseudo:
-        formatted_line.append(tok.formatted_whitespace_prefix)
-        formatted_line.append(tok.value)
+        formatted_line.extend((tok.formatted_whitespace_prefix, tok.value))
       elif (not tok.next_token.whitespace_prefix.startswith('\n') and
             not tok.next_token.whitespace_prefix.startswith(' ')):
         if (tok.previous_token.value == ':' or

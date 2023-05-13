@@ -296,7 +296,7 @@ def GetOpeningBracket(node):
   Returns:
     The opening bracket node or None if it couldn't find one.
   """
-  return getattr(node, _NODE_ANNOTATION_PREFIX + 'container_bracket', None)
+  return getattr(node, f'{_NODE_ANNOTATION_PREFIX}container_bracket', None)
 
 
 def SetOpeningBracket(node, bracket):
@@ -306,7 +306,7 @@ def SetOpeningBracket(node, bracket):
     node: the node.
     bracket: opening bracket to set.
   """
-  setattr(node, _NODE_ANNOTATION_PREFIX + 'container_bracket', bracket)
+  setattr(node, f'{_NODE_ANNOTATION_PREFIX}container_bracket', bracket)
 
 
 def DumpNodeToString(node):

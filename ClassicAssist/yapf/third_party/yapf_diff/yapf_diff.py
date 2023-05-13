@@ -86,34 +86,32 @@ def main():
   filename = None
   lines_by_file = {}
   for line in sys.stdin:
-    match = re.search(r'^\+\+\+\ (.*?/){%s}(\S*)' % args.prefix, line)
-    if match:
-      filename = match.group(2)
+    if match := re.search(r'^\+\+\+\ (.*?/){%s}(\S*)' % args.prefix, line):
+      filename = match[2]
     if filename is None:
       continue
 
     if args.regex is not None:
-      if not re.match('^%s$' % args.regex, filename):
+      if not re.match(f'^{args.regex}$', filename):
         continue
-    elif not re.match('^%s$' % args.iregex, filename, re.IGNORECASE):
+    elif not re.match(f'^{args.iregex}$', filename, re.IGNORECASE):
       continue
 
-    match = re.search(r'^@@.*\+(\d+)(,(\d+))?', line)
-    if match:
-      start_line = int(match.group(1))
+    if match := re.search(r'^@@.*\+(\d+)(,(\d+))?', line):
+      start_line = int(match[1])
       line_count = 1
-      if match.group(3):
-        line_count = int(match.group(3))
+      if match[3]:
+        line_count = int(match[3])
       if line_count == 0:
         continue
       end_line = start_line + line_count - 1
       lines_by_file.setdefault(filename, []).extend(
-          ['--lines', str(start_line) + '-' + str(end_line)])
+          ['--lines', f'{start_line}-{str(end_line)}'])
 
   # Reformat files containing changes in place.
   for filename, lines in lines_by_file.items():
     if args.in_place and args.verbose:
-      print('Formatting {}'.format(filename))
+      print(f'Formatting {filename}')
     command = [args.binary, filename]
     if args.in_place:
       command.append('-i')
@@ -137,7 +135,7 @@ def main():
       diff = difflib.unified_diff(code, formatted_code, filename, filename,
                                   '(before formatting)', '(after formatting)')
       diff_string = ''.join(diff)
-      if len(diff_string) > 0:
+      if diff_string != "":
         sys.stdout.write(diff_string)
 
 

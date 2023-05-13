@@ -41,9 +41,7 @@ def _TabbedContinuationAlignPadding(spaces, align_style, tab_width):
     A padding string for alignment with style specified by align_style option.
   """
   if align_style in ('FIXED', 'VALIGN-RIGHT'):
-    if spaces > 0:
-      return '\t' * int((spaces + tab_width - 1) / tab_width)
-    return ''
+    return '\t' * int((spaces + tab_width - 1) / tab_width) if spaces > 0 else ''
   return ' ' * spaces
 
 
@@ -127,8 +125,7 @@ class FormatToken(object):
   def formatted_whitespace_prefix(self):
     if style.Get('INDENT_BLANK_LINES'):
       without_newlines = self.whitespace_prefix.lstrip('\n')
-      height = len(self.whitespace_prefix) - len(without_newlines)
-      if height:
+      if height := len(self.whitespace_prefix) - len(without_newlines):
         return ('\n' + without_newlines) * height
     return self.whitespace_prefix
 

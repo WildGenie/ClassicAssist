@@ -30,11 +30,10 @@ def FormatErrorMsg(e):
     A properly formatted error message string.
   """
   if isinstance(e, SyntaxError):
-    return '{}:{}:{}: {}'.format(e.filename, e.lineno, e.offset, e.msg)
+    return f'{e.filename}:{e.lineno}:{e.offset}: {e.msg}'
   if isinstance(e, tokenize.TokenError):
-    return '{}:{}:{}: {}'.format(e.filename, e.args[1][0], e.args[1][1],
-                                 e.args[0])
-  return '{}:{}:{}: {}'.format(e.args[1][0], e.args[1][1], e.args[1][2], e.msg)
+    return f'{e.filename}:{e.args[1][0]}:{e.args[1][1]}: {e.args[0]}'
+  return f'{e.args[1][0]}:{e.args[1][1]}:{e.args[1][2]}: {e.msg}'
 
 
 class YapfError(Exception):

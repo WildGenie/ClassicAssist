@@ -45,8 +45,7 @@ def SetGlobalStyle(style):
   """Set a style dict."""
   global _style
   global _GLOBAL_STYLE_FACTORY
-  factory = _GetStyleFactory(style)
-  if factory:
+  if factory := _GetStyleFactory(style):
     _GLOBAL_STYLE_FACTORY = factory
   _style = style
 
@@ -547,10 +546,11 @@ _DEFAULT_STYLE_TO_FACTORY = [
 
 
 def _GetStyleFactory(style):
-  for def_style, factory in _DEFAULT_STYLE_TO_FACTORY:
-    if style == def_style:
-      return factory
-  return None
+  return next(
+      (factory for def_style, factory in _DEFAULT_STYLE_TO_FACTORY
+       if style == def_style),
+      None,
+  )
 
 
 def _ContinuationAlignStyleStringConverter(s):
@@ -696,10 +696,7 @@ def CreateStyleFromConfig(style_config):
       if _style == style:
         def_style = True
         break
-    if not def_style:
-      return _style
-    return _GLOBAL_STYLE_FACTORY()
-
+    return _style if not def_style else _GLOBAL_STYLE_FACTORY()
   if isinstance(style_config, dict):
     config = _CreateConfigParserFromConfigDict(style_config)
   elif isinstance(style_config, py3compat.basestring):
@@ -726,8 +723,7 @@ def _CreateConfigParserFromConfigDict(config_dict):
 def _CreateConfigParserFromConfigString(config_string):
   """Given a config string from the command line, return a config parser."""
   if config_string[0] != '{' or config_string[-1] != '}':
-    raise StyleConfigError(
-        "Invalid style dict syntax: '{}'.".format(config_string))
+    raise StyleConfigError(f"Invalid style dict syntax: '{config_string}'.")
   config = py3compat.ConfigParser()
   config.add_section('style')
   for key, value, _ in re.findall(
@@ -820,8 +816,7 @@ def _CreateStyleFromConfigParser(config):
     try:
       base_style[option] = _STYLE_OPTION_VALUE_CONVERTER[option](value)
     except ValueError:
-      raise StyleConfigError("'{}' is not a valid setting for {}.".format(
-          value, option))
+      raise StyleConfigError(f"'{value}' is not a valid setting for {option}.")
   return base_style
 
 

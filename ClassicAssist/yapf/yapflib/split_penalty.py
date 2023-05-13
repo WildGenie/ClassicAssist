@@ -237,12 +237,10 @@ class _SplitPenaltyAssigner(pytree_visitor.PyTreeVisitor):
         _SetStronglyConnected(node.children[1].children[0])
         _SetStronglyConnected(node.children[1].children[2])
 
-        # Still allow splitting around the operator.
-        split_before = ((name.endswith('_test') and
-                         style.Get('SPLIT_BEFORE_LOGICAL_OPERATOR')) or
-                        (name.endswith('_expr') and
-                         style.Get('SPLIT_BEFORE_BITWISE_OPERATOR')))
-        if split_before:
+        if split_before := ((name.endswith('_test')
+                             and style.Get('SPLIT_BEFORE_LOGICAL_OPERATOR'))
+                            or (name.endswith('_expr')
+                                and style.Get('SPLIT_BEFORE_BITWISE_OPERATOR'))):
           _SetSplitPenalty(
               pytree_utils.LastLeafNode(node.children[1].children[1]), 0)
         else:
@@ -613,10 +611,10 @@ def _StronglyConnectedCompOp(op):
     if (pytree_utils.FirstLeafNode(op.children[1]).value == 'is' and
         pytree_utils.LastLeafNode(op.children[1]).value == 'not'):
       return True
-  if (isinstance(op.children[1], pytree.Leaf) and
-      op.children[1].value in {'==', 'in'}):
-    return True
-  return False
+  return isinstance(op.children[1], pytree.Leaf) and op.children[1].value in {
+      '==',
+      'in',
+  }
 
 
 def _DecrementSplitPenalty(node, amt):

@@ -201,13 +201,11 @@ def FormatCode(unformatted_source,
 
 
 def _CheckPythonVersion():  # pragma: no cover
-  errmsg = 'yapf is only supported for Python 2.7 or 3.4+'
-  if sys.version_info[0] == 2:
-    if sys.version_info[1] < 7:
-      raise RuntimeError(errmsg)
-  elif sys.version_info[0] == 3:
-    if sys.version_info[1] < 4:
-      raise RuntimeError(errmsg)
+  if (sys.version_info[0] == 2 and sys.version_info[1] < 7
+      or sys.version_info[0] != 2 and sys.version_info[0] == 3
+      and sys.version_info[1] < 4):
+    errmsg = 'yapf is only supported for Python 2.7 or 3.4+'
+    raise RuntimeError(errmsg)
 
 
 def ReadFile(filename, logger=None):
